@@ -10,7 +10,7 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - eotsd-ae30623a634450db81ce1755839754cc822bf5e5-stakercli-2fa54c9b0863b8d4a9c5e90ff74a25674dfeba8f
+            - eotsd-stakercli-cache-{{ checksum "Makefile" }}
       - go/install:
           version: "1.21.4"
       - run:
@@ -34,7 +34,7 @@ jobs:
               make install
             fi
       - save_cache:
-          key: eotsd-ae30623a634450db81ce1755839754cc822bf5e5-stakercli-2fa54c9b0863b8d4a9c5e90ff74a25674dfeba8f
+          key: eotsd-stakercli-cache-{{ checksum "Makefile" }}
           paths:
             - /home/circleci/.go_workspace/bin/eotsd
             - /home/circleci/.go_workspace/bin/stakercli
@@ -46,7 +46,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - eotsd-ae30623a634450db81ce1755839754cc822bf5e5-stakercli-2fa54c9b0863b8d4a9c5e90ff74a25674dfeba8f
+            - eotsd-stakercli-cache-{{ checksum "Makefile" }}
       - run:
           name: Verify offchain signed transaction
           command: |
@@ -88,11 +88,13 @@ jobs:
 workflows:
   New-FP:
     jobs:
-    - build-eotsd-stakercli
-    - verify-onchain-BTC-tx
-    - verify-offchain-tx:
-        requires:
-        - build-eotsd-stakercli
+      - build-eotsd-stakercli
+      - verify-offchain-tx:
+          requires:
+            - build-eotsd-stakercli
+      - verify-onchain-BTC-tx:
+          requires:
+            - build-eotsd-stakercli
   Parameters:
     jobs:
-    - test-params-parser
+      - test-params-parser
